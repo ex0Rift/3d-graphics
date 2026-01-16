@@ -1,7 +1,5 @@
-#include <iostream>
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
 #include "settings.h"
+#include "inputs.hpp"
 
 int main()
 {
@@ -18,7 +16,26 @@ int main()
         return -1;
     }
     glfwMakeContextCurrent(window);
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        std::cout << "Failed to init GLAD" << std::endl;
+        return -1;
+    }
 
-    
+    glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window);
+
+        //rendering commands go under here
+        glClearColor(0.2f,0.3f,0.3f,1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        //check events and swap buffers
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+    glfwTerminate();
     return 0;
 } 
