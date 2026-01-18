@@ -1,0 +1,3 @@
+# This is my attempt at learning openGL
+
+more soon...
