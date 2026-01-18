@@ -39,6 +39,7 @@ int main()
 
     //setup shaders
     //-------------
+    int success;
 
     //vertex shader
 
@@ -47,7 +48,6 @@ int main()
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
     glCompileShader(vertexShader);
     //check if compilation was successful
-    int success;
     char infoLog[512];
     glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
     if (!success)
@@ -63,14 +63,32 @@ int main()
     glShaderSource(fragmentShader,1, &fragmentShaderSource, NULL);
     glCompileShader(fragmentShader);
     //check if compilation was successful
-    int successFrag;
     char infoLogFrag[512];
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &successFrag);
-    if (!successFrag)
+    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+    if (!success)
     {
         glGetShaderInfoLog(fragmentShader, 512, NULL, infoLogFrag);
-        std::cout << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLogFrag << std::endl;
+        std::cout << "ERROR::SHADER::COMPILATION_FAILED\n" << success << std::endl;
     }
+
+    //link the shaders
+
+    unsigned int shaderProgram;
+    shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+    //check is successful
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    if (!success)
+    {
+        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+        std::cout << "ERROR::LINK::LINKING FAILED\n" << success << std::endl;
+    }
+
+    //delete the shaders
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
 
     //set up the buffers and vertex
     float verticies[] = {
@@ -79,11 +97,18 @@ int main()
         0.0f, 0.5f, 0.0f
     };
 
-    unsigned int VBO;
+    unsigned int VBO , VAO;
+    glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
+
+    glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(verticies), verticies, GL_STATIC_DRAW);
+
+    //tell openGL how to interpit vertex data
+    glVertexAttribPointer(0, 3, GL_FLOAT,  GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
 
 
     // the mainloop where everything repeats every frame
@@ -94,6 +119,10 @@ int main()
         //rendering commands go under here
         glClearColor(0.2f,0.3f,0.3f,1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        glUseProgram(shaderProgram);
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
 
         //check events and swap buffers
         glfwSwapBuffers(window);
